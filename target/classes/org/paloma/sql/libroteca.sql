@@ -74,41 +74,60 @@ CREATE TABLE resenas (
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- -----------------------------------------------------
--- Índices para acelerar consultas frecuentes
--- -----------------------------------------------------
-CREATE INDEX idx_resenas_usuario ON resenas(idUsuario);
-CREATE INDEX idx_resenas_libro   ON resenas(idLibro);
-CREATE INDEX idx_libro_titulo    ON libro(titulo);
-
--- =====================================================
--- Datos de ejemplo
--- =====================================================
-INSERT INTO usuarios (nombre, email, fecha_inscripcion) VALUES
-('Laura Gómez',  'laura@example.com',  '2025-01-15'),
-('Carlos Ruiz',  'carlos@example.com', '2025-03-02');
-
 INSERT INTO escritor (nombre, biografia) VALUES
-('Gabriel García Márquez', 'Escritor colombiano, Premio Nobel de Literatura 1982.'),
-('Isabel Allende',         'Escritora chilena, autora de La casa de los espíritus.');
+('J. R. R. Tolkien',      'Escritor y filólogo británico, autor de El Señor de los Anillos y El Silmarillion.'),
+('J. K. Rowling',         'Escritora británica, creadora de la saga Harry Potter.'),
+('C. S. Lewis',           'Escritor británico, autor de Las crónicas de Narnia.'),
+('Suzanne Collins',       'Escritora estadounidense, autora de la trilogía Los juegos del hambre.'),
+('Fiódor Dostoyevski',    'Novelista ruso, uno de los grandes autores de la literatura universal.'),
+('George Orwell',         'Escritor y periodista británico, autor de 1984 y Rebelión en la granja.'),
+('Brandon Sanderson',     'Escritor estadounidense de fantasía, autor de la saga Nacidos de la bruma.'),
+('Jane Austen', 'Novelista británica, autora de Orgullo y prejuicio y Sentido y sensibilidad.');
 
 INSERT INTO libro (ISBN, titulo, genero, fecha_publicacion) VALUES
-('978-0307474728', 'Cien años de soledad',      'Realismo mágico', '1967-05-30'),
-('978-8401337208', 'La casa de los espíritus',  'Novela',          '1982-01-01');
+('978-8445077528', 'El Silmarillion',                          'Fantasía épica',   '1977-09-15'),
+('978-8445071410', 'El Señor de los Anillos',                  'Fantasía épica',   '1954-07-29'),
+('978-8478884452', 'Harry Potter y la piedra filosofal',       'Fantasía',         '1997-06-26'),
+('978-8408165453', 'Las crónicas de Narnia',                   'Fantasía',         '1950-10-16'),
+('978-8427202146', 'Los juegos del hambre: En llamas',         'Ciencia ficción',  '2009-09-01'),
+('978-8491050353', 'El idiota',                                'Novela clásica',   '1869-01-01'),
+('978-8499890944', '1984',                                     'Distopía',         '1949-06-08'),
+('978-8499890951', 'Rebelión en la granja',                    'Sátira política',  '1945-08-17'),
+('978-8466658911', 'Nacidos de la bruma: El imperio final',    'Fantasía épica',   '2006-07-17'),
+('978-8466658928', 'El pozo de la ascensión',                  'Fantasía épica',   '2007-08-21'),
+('978-8491051121', 'Orgullo y prejuicio',     'Novela romántica', '1813-01-28'),
+('978-8491051138', 'Sentido y sensibilidad',  'Novela romántica', '1811-10-30');
 
-INSERT INTO autoria (idEscritor, idLibro) VALUES (1, 1), (2, 2);
+INSERT INTO autoria (idEscritor, idLibro) VALUES
+((SELECT idEscritor FROM escritor WHERE nombre = 'J. R. R. Tolkien'),   (SELECT idLibro FROM libro WHERE ISBN = '978-8445077528')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'J. R. R. Tolkien'),   (SELECT idLibro FROM libro WHERE ISBN = '978-8445071410')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'J. K. Rowling'),      (SELECT idLibro FROM libro WHERE ISBN = '978-8478884452')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'C. S. Lewis'),        (SELECT idLibro FROM libro WHERE ISBN = '978-8408165453')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'Suzanne Collins'),    (SELECT idLibro FROM libro WHERE ISBN = '978-8427202146')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'Fiódor Dostoyevski'), (SELECT idLibro FROM libro WHERE ISBN = '978-8491050353')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'George Orwell'),      (SELECT idLibro FROM libro WHERE ISBN = '978-8499890944')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'George Orwell'),      (SELECT idLibro FROM libro WHERE ISBN = '978-8499890951')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'Brandon Sanderson'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8466658911')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'Brandon Sanderson'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8466658928')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'Jane Austen'), (SELECT idLibro FROM libro WHERE ISBN = '978-8491051121')),
+((SELECT idEscritor FROM escritor WHERE nombre = 'Jane Austen'), (SELECT idLibro FROM libro WHERE ISBN = '978-8491051138'));
+
+INSERT INTO usuarios (nombre, email, fecha_inscripcion) VALUES
+('Marta Sánchez', 'marta@example.com', '2025-06-10'),
+('Pablo Díaz',    'pablo@example.com', '2025-09-21');
 
 INSERT INTO resenas (idUsuario, idLibro, comentarios, valoracion) VALUES
-(1, 1, 'Una obra maestra de la literatura.', 5),
-(2, 1, 'Muy buena, aunque algo densa.',       4),
-(1, 2, 'Me encantó la historia familiar.',    5);
-
--- =====================================================
--- Consulta de ejemplo: libros con autor y valoración media
--- =====================================================
--- SELECT l.titulo, e.nombre AS autor, ROUND(AVG(r.valoracion), 2) AS media
--- FROM libro l
--- JOIN autoria a  ON a.idLibro = l.idLibro
--- JOIN escritor e ON e.idEscritor = a.idEscritor
--- LEFT JOIN resenas r ON r.idLibro = l.idLibro
--- GROUP BY l.idLibro, e.idEscritor;
+((SELECT idUsuario FROM usuarios WHERE email = 'laura@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8445071410'), 'Una aventura épica inolvidable.',5),
+((SELECT idUsuario FROM usuarios WHERE email = 'carlos@example.com'), (SELECT idLibro FROM libro WHERE ISBN = '978-8445071410'), 'Muy buena, pero algo lenta al inicio.', 4),
+((SELECT idUsuario FROM usuarios WHERE email = 'marta@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8445077528'), 'Denso, pero fascinante para fans de Tolkien.', 4),
+((SELECT idUsuario FROM usuarios WHERE email = 'pablo@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8478884452'), 'Perfecto para empezar la saga.',5),
+((SELECT idUsuario FROM usuarios WHERE email = 'laura@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8499890944'), 'Inquietante y muy actual.',5),
+((SELECT idUsuario FROM usuarios WHERE email = 'marta@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8499890944'), 'Una lectura imprescindible.',5),
+((SELECT idUsuario FROM usuarios WHERE email = 'carlos@example.com'), (SELECT idLibro FROM libro WHERE ISBN = '978-8499890951'), 'Corto pero muy contundente.',4),
+((SELECT idUsuario FROM usuarios WHERE email = 'pablo@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8491050353'), 'Profundo, aunque exigente.',3),
+((SELECT idUsuario FROM usuarios WHERE email = 'laura@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8466658911'), 'Un sistema de magia muy original.',5),
+((SELECT idUsuario FROM usuarios WHERE email = 'carlos@example.com'), (SELECT idLibro FROM libro WHERE ISBN = '978-8466658928'), 'Mejora aún más que el primer libro.', 5),
+((SELECT idUsuario FROM usuarios WHERE email = 'marta@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8427202146'), 'Muy adictivo, lo leí del tirón.', 4),
+((SELECT idUsuario FROM usuarios WHERE email = 'pablo@example.com'),  (SELECT idLibro FROM libro WHERE ISBN = '978-8408165453'), 'Un clásico para todas las edades.',4),
+((SELECT idUsuario FROM usuarios WHERE email = 'laura@example.com'), (SELECT idLibro FROM libro WHERE ISBN = '978-8491051121'), 'Un clásico encantador y muy ingenioso.', 5),
+((SELECT idUsuario FROM usuarios WHERE email = 'marta@example.com'), (SELECT idLibro FROM libro WHERE ISBN = '978-8491051138'), 'Preciosa historia sobre dos hermanas.',  4);
