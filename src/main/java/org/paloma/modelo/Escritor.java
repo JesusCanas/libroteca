@@ -3,6 +3,9 @@ package org.paloma.modelo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Representa a un escritor y los libros que tiene asociados mediante autoría.
+ */
 public class Escritor {
 
     private int idEscritor;

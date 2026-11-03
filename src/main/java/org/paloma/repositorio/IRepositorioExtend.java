@@ -3,6 +3,13 @@ package org.paloma.repositorio;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Amplía las operaciones básicas del repositorio con resultados opcionales
+ * y colecciones concretas.
+ *
+ * @param <T> tipo de entidad gestionada
+ * @param <ID> tipo del identificador de la entidad
+ */
 public interface IRepositorioExtend<T, ID> extends IRepositorio<T, ID> {
 
     /**

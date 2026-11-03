@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Representa a una persona usuaria de la biblioteca y las reseñas que ha escrito.
+ */
 public class Usuario {
 
     private int idUsuario;

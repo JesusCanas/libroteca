@@ -12,8 +12,17 @@ import org.paloma.repositorio.LibroRepositorio;
 import org.paloma.repositorio.ResenaRepositorio;
 import org.paloma.repositorio.UsuarioRepositorio;
 
+/**
+ * Punto de entrada de la aplicación y demostración de las operaciones disponibles
+ * en los repositorios de libros, usuarios, escritores y reseñas.
+ */
 public class Main {
 
+    /**
+     * Ejecuta ejemplos de consulta, inserción, actualización y eliminación.
+     *
+     * @param args argumentos de línea de comandos (no utilizados)
+     */
     public static void main(String[] args) {
         LibroRepositorio libros = new LibroRepositorio();
         UsuarioRepositorio usuarios = new UsuarioRepositorio();
@@ -109,6 +118,7 @@ public class Main {
         System.out.println("Reseñas:    " + resenas.count());
     }
 
+    /** Imprime un encabezado para separar las secciones de la demostración. */
     private static void titulo(String texto) {
         System.out.println("\n===== " + texto + " =====");
     }

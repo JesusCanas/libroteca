@@ -1,5 +1,12 @@
 package org.paloma.repositorio;
 
+/**
+ * Define las operaciones básicas de persistencia para entidades identificadas
+ * por un tipo de clave.
+ *
+ * @param <T> tipo de entidad gestionada
+ * @param <ID> tipo del identificador de la entidad
+ */
 public interface IRepositorio<T, ID> {
     /**
      * Devuelve el número de entidades.

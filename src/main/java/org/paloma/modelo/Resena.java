@@ -1,5 +1,9 @@
 package org.paloma.modelo;
 
+/**
+ * Representa la reseña que un usuario realiza sobre un libro, con un comentario
+ * y una valoración de 1 a 5.
+ */
 public class Resena {
 
     private int idResena;

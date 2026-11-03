@@ -149,7 +149,7 @@ public class EscritorRepositorio implements IRepositorioExtend<Escritor, Integer
         }
     }
 
-  
+    /** Devuelve los escritores cuyo nombre contiene el texto indicado. */
     public List<Escritor> findByNombreContaining(String texto) {
         if (texto == null) {
             throw new IllegalArgumentException("El texto no puede ser nulo");

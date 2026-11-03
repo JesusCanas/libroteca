@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Representa un libro de la biblioteca, sus escritores y las reseñas asociadas.
+ */
 public class Libro {
 
     private int idLibro;
