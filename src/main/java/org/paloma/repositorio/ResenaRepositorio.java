@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Date;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,19 @@ import org.paloma.modelo.Resena;
 import org.paloma.modelo.Usuario;
 import org.paloma.persistencia.ConexionBD;
 
+/**
+ * Repositorio de {@link Resena}. Al leerla se carga también el usuario y el libro asociados.
+ */
 public class ResenaRepositorio implements IRepositorioExtend<Resena, Integer> {
+
+    private static final String SELECT_BASE =
+            "SELECT r.idResena, r.comentarios, r.valoracion, "
+            + "u.idUsuario, u.nombre AS u_nombre, u.email AS u_email, u.fecha_inscripcion AS u_fecha, "
+            + "l.idLibro, l.ISBN AS l_isbn, l.titulo AS l_titulo, l.genero AS l_genero, "
+            + "l.fecha_publicacion AS l_fecha "
+            + "FROM resenas r "
+            + "JOIN usuarios u ON u.idUsuario = r.idUsuario "
+            + "JOIN libro l ON l.idLibro = r.idLibro";
 
     @Override
     public long count() {
@@ -70,8 +83,9 @@ public class ResenaRepositorio implements IRepositorioExtend<Resena, Integer> {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al comprobar existencia por ID: " + id, e);
@@ -86,41 +100,14 @@ public class ResenaRepositorio implements IRepositorioExtend<Resena, Integer> {
     @Override
     public Optional<Resena> findByIdOptional(Integer id) {
         validarId(id);
-        String sql = "SELECT * FROM resenas WHERE idResena = ?";
-
-        try (Connection conn = ConexionBD.getConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return Optional.of(mapear(rs));
-            }
-            return Optional.empty();
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar por ID: " + id, e);
-        }
+        List<Resena> lista = buscarVarios(SELECT_BASE + " WHERE r.idResena = ?", id,
+                "Error al buscar por ID: " + id);
+        return lista.isEmpty() ? Optional.empty() : Optional.of(lista.get(0));
     }
 
     @Override
     public List<Resena> findAllToList() {
-        List<Resena> lista = new ArrayList<>();
-        String sql = "SELECT * FROM resenas";
-
-        try (Connection conn = ConexionBD.getConexion();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                lista.add(mapear(rs));
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al obtener las reseñas", e);
-        }
-        return lista;
+        return buscarVarios(SELECT_BASE, null, "Error al obtener las reseñas");
     }
 
     @Override
@@ -133,7 +120,11 @@ public class ResenaRepositorio implements IRepositorioExtend<Resena, Integer> {
         if (entity == null) {
             throw new IllegalArgumentException("La entidad no puede ser nula");
         }
+        // Insertar si es nueva (id 0); si trae id, debe existir previamente (buscar -> modificar -> guardar)
         boolean esNuevo = entity.getIdResena() == 0;
+        if (!esNuevo && !existsById(entity.getIdResena())) {
+            throw new IllegalArgumentException("No existe ninguna reseña con id " + entity.getIdResena());
+        }
         if (entity.getUsuario() == null || entity.getLibro() == null) {
             throw new IllegalArgumentException("La reseña necesita usuario y libro");
         }
@@ -157,9 +148,10 @@ public class ResenaRepositorio implements IRepositorioExtend<Resena, Integer> {
             ps.executeUpdate();
 
             if (esNuevo) {
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    entity.setIdResena(rs.getInt(1));
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        entity.setIdResena(rs.getInt(1));
+                    }
                 }
             }
             return entity;
@@ -170,21 +162,64 @@ public class ResenaRepositorio implements IRepositorioExtend<Resena, Integer> {
         }
     }
 
+    
+    /** Devuelve las reseñas de un libro. */
+    public List<Resena> findByLibro(Integer idLibro) {
+        validarId(idLibro);
+        return buscarVarios(SELECT_BASE + " WHERE r.idLibro = ?", idLibro,
+                "Error al buscar reseñas del libro: " + idLibro);
+    }
+
+    /** Devuelve las reseñas escritas por un usuario. */
+    public List<Resena> findByUsuario(Integer idUsuario) {
+        validarId(idUsuario);
+        return buscarVarios(SELECT_BASE + " WHERE r.idUsuario = ?", idUsuario,
+                "Error al buscar reseñas del usuario: " + idUsuario);
+    }
+
+    /** Devuelve las reseñas con una valoración mayor o igual que la indicada (1 a 5). */
+    public List<Resena> findByValoracionMinima(int valoracion) {
+        if (valoracion < 1 || valoracion > 5) {
+            throw new IllegalArgumentException("La valoración debe estar entre 1 y 5");
+        }
+        return buscarVarios(SELECT_BASE + " WHERE r.valoracion >= ?", valoracion,
+                "Error al buscar reseñas por valoración");
+    }
+
+  
+
+    private List<Resena> buscarVarios(String sql, Object parametro, String mensajeError) {
+        List<Resena> lista = new ArrayList<>();
+
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (parametro != null) {
+                ps.setObject(1, parametro);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(mensajeError, e);
+        }
+        return lista;
+    }
+
     private Resena mapear(ResultSet rs) throws SQLException {
-        Resena resena = new Resena();
-        resena.setIdResena(rs.getInt("idResena"));
-        resena.setComentarios(rs.getString("comentarios"));
-        resena.setValoracion(rs.getInt("valoracion"));
+        Date fechaUsuario = rs.getDate("u_fecha");
+        Usuario usuario = new Usuario(rs.getInt("idUsuario"), rs.getString("u_nombre"),
+                rs.getString("u_email"), fechaUsuario != null ? fechaUsuario.toLocalDate() : null);
 
-        // Solo se rellena el id de las FK; para el objeto completo usar UsuarioRepositorio / LibroRepositorio
-        Usuario usuario = new Usuario();
-        usuario.setIdUsuario(rs.getInt("idUsuario"));
-        resena.setUsuario(usuario);
+        Date fechaLibro = rs.getDate("l_fecha");
+        Libro libro = new Libro(rs.getInt("idLibro"), rs.getString("l_isbn"), rs.getString("l_titulo"),
+                rs.getString("l_genero"), fechaLibro != null ? fechaLibro.toLocalDate() : null);
 
-        Libro libro = new Libro();
-        libro.setIdLibro(rs.getInt("idLibro"));
-        resena.setLibro(libro);
-        return resena;
+        return new Resena(rs.getInt("idResena"), rs.getString("comentarios"),
+                rs.getInt("valoracion"), usuario, libro);
     }
 
     private void validarId(Integer id) {
