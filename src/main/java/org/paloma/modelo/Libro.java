@@ -100,10 +100,10 @@ public class Libro {
 
     @Override
     public String toString() {
-        return "Libro{idLibro=" + idLibro
-                + ", isbn='" + isbn + '\''
-                + ", titulo='" + titulo + '\''
-                + ", genero='" + genero + '\''
-                + ", fechaPublicacion=" + fechaPublicacion + '}';
+        return "Libro - id:" + idLibro
+                + " - ISBN:" + isbn
+                + " - titulo:" + titulo
+                + " - genero:" + genero
+                + " - fechaPublicacion:" + fechaPublicacion;
     }
 }

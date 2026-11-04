@@ -68,10 +68,10 @@ public class Resena {
 
     @Override
     public String toString() {
-        return "Resena{idResena=" + idResena
-                + ", valoracion=" + valoracion
-                + ", comentarios='" + comentarios + '\''
-                + ", usuario=" + (usuario != null ? usuario.getNombre() : null)
-                + ", libro=" + (libro != null ? libro.getTitulo() : null) + '}';
+        return "Reseña id:" + idResena
+                + " - valoracion:" + valoracion
+                + " - comentarios:" + comentarios
+                + " - usuario:" + (usuario != null ? usuario.getNombre() : "No se ha identificado el autor.")
+                + " - libro:" + libro.getTitulo();
     }
 }

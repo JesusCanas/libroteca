@@ -66,8 +66,8 @@ public class Escritor {
 
     @Override
     public String toString() {
-        return "Escritor{idEscritor=" + idEscritor
-                + ", nombre='" + nombre + '\''
-                + ", biografia='" + biografia + '\'' + '}';
+        return "Escritor - id :" + idEscritor
+                + " - nombre: '" + nombre
+                + " - biografia:'" + biografia;
     }
 }
