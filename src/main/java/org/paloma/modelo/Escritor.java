@@ -61,7 +61,7 @@ public class Escritor {
         }
         if (!libro.getEscritores().contains(this)) {
             libro.getEscritores().add(this);
-        }
+        } 
     }
 
     @Override
